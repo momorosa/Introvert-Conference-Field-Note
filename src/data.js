@@ -32,6 +32,29 @@ export const DAYS = [
   { n: 4, dow: "THU", date: "Jul 2",  iso: "2026-07-02", name: "Trust + Wrap",      theme: "Low battery by design. Listen, note, follow up." },
 ];
 
+// Booth recommendations — companies featured at the fair, matched to your
+// thesis (FDE targets, agents, document triage, governance/trust, design-eng).
+// NOTE: these are companies present/speaking at the event; verify each is
+// actually on the expo floor — some may be talks, not booths.
+export const BOOTHS = [
+  // FDE targets
+  { id: "b-factory",    name: "Factory",    topic: "fde",        why: "Agentic dev platform on the FDE track. A Strong-tier target: ask how their forward-deployed engineers scope and ship." },
+  { id: "b-cognition",  name: "Cognition",  topic: "fde",        why: "Devin's makers, on the FDE track. Good for the role's history and contradictions before interviews." },
+  { id: "b-cursor",     name: "Cursor",     topic: "fde",        why: "FDE implementation plus semantic codebase search. On your tier; see how design and agents meet in their tooling." },
+  // document triage / agents (TomoCare's lane)
+  { id: "b-reducto",    name: "Reducto",    topic: "agents",     why: "TomoCare's twin: parses redacted PDFs to handwritten letters. Compare their classify-extract-route pipeline to yours." },
+  { id: "b-llamaindex", name: "LlamaIndex", topic: "agents",     why: "Document context layer for agents: the retrieval half of your triage problem." },
+  { id: "b-composio",   name: "Composio",   topic: "agents",     why: "Tool-integration framework: the governed MCP layer your architecture depends on." },
+  { id: "b-exa",        name: "Exa",        topic: "agents",     why: "Search built for agents. Useful if TomoCare needs grounded retrieval." },
+  // governance / trust / evals
+  { id: "b-braintrust", name: "Braintrust", topic: "governance", why: "Evals, traces, scorers: the enterprise vocabulary for your provenance thesis. You already have their Day 1 session." },
+  { id: "b-qodo",       name: "Qodo",       topic: "governance", why: "Automated code review and validation: the trust-in-AI-code lane you keep circling." },
+  { id: "b-greptile",   name: "Greptile",   topic: "governance", why: "Analyzed 1M+ AI-generated PRs. Hard data on when to trust agent output." },
+  { id: "b-twosigma",   name: "Two Sigma",  topic: "governance", why: "Regulated-domain agents at a $70B hedge fund: HITL at scale, your finance angle for TomoCare." },
+  // design engineering
+  { id: "b-figma",      name: "Figma",      topic: "design",     why: "MCP server for design agents: dead center of your design-code roundtrip thesis." },
+];
+
 // time is "h:mmam-h:mmpm". end time is parsed for the attendance nudge.
 export const SESSIONS = [
   // ── DAY 1 ──

@@ -10,6 +10,7 @@ export const DEFAULT_STATE = {
   nightOut: {},        // day -> true
   notes: {},           // sessionId -> my own note text
   customSessions: [],  // sessions you attended that aren't in the plan
+  booths: {},          // boothId -> { visited: bool, note: string }
   updated_at: 0,       // ms epoch, drives last-write-wins
 };
 

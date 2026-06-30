@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { SESSIONS, TOPICS, DAYS, ENERGY } from "./data";
+import { SESSIONS, TOPICS, DAYS, ENERGY, BOOTHS } from "./data";
 import { useSession, SignIn } from "./lib/auth";
 import { useFieldPlanState } from "./lib/store";
 
@@ -126,6 +126,7 @@ export default function App() {
   const [personFor, setPersonFor] = useState(null); // sessionId or "general"
   const [showPeople, setShowPeople] = useState(false);
   const [showAddSession, setShowAddSession] = useState(false);
+  const [showBooths, setShowBooths] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
 
   const patch = useCallback((fn) => setState((s) => { const n = structuredClone(s); fn(n); return n; }), [setState]);
@@ -143,6 +144,7 @@ export default function App() {
   const convos = state.conversations[day] || 0;
   const GOAL = 3;
   const streak = DAYS.filter((d) => (state.conversations[d.n] || 0) >= GOAL).length;
+  const boothsVisited = Object.values(state.booths || {}).filter((b) => b.visited).length;
   const now = new Date();
 
   const setAttend = (id, val) =>
@@ -179,6 +181,17 @@ export default function App() {
       delete n.attendance[id];
       delete n.ratings[id];
       if (n.notes) delete n.notes[id];
+    });
+  const toggleBooth = (id) =>
+    patch((n) => {
+      if (!n.booths) n.booths = {};
+      const cur = n.booths[id] || {};
+      n.booths[id] = { ...cur, visited: !cur.visited };
+    });
+  const setBoothNote = (id, text) =>
+    patch((n) => {
+      if (!n.booths) n.booths = {};
+      n.booths[id] = { ...(n.booths[id] || {}), note: text };
     });
 
   const batteryColor = battery > 40 ? "#5DCAA5" : battery > 20 ? "#E8B059" : "#E89B9B";
@@ -438,6 +451,9 @@ export default function App() {
           <button onClick={() => setShowPeople(true)} className="font-mono text-[11px] text-amber-300/80 underline">
             People I met ({state.people.length})
           </button>
+          <button onClick={() => setShowBooths(true)} className="font-mono text-[11px] text-amber-300/80 underline">
+            Booths ({boothsVisited}/{BOOTHS.length})
+          </button>
           {!session?.local && (
             <button onClick={async () => { const { supabase } = await import("./lib/supabase"); await supabase?.auth.signOut(); }}
               className="font-mono text-[11px] text-neutral-500 underline">sign out</button>
@@ -452,6 +468,8 @@ export default function App() {
       {showPeople && <PeopleList people={state.people} onClose={() => setShowPeople(false)} />}
       {/* add custom session modal */}
       {showAddSession && <SessionModal onClose={() => setShowAddSession(false)} onSave={(d) => { saveCustomSession(d); setShowAddSession(false); }} />}
+      {/* booth recommendations modal */}
+      {showBooths && <BoothsModal visits={state.booths} onToggle={toggleBooth} onNote={setBoothNote} onClose={() => setShowBooths(false)} />}
     </div>
   );
 }
@@ -530,6 +548,53 @@ function SessionModal({ onClose, onSave }) {
           <button onClick={() => { if (title.trim()) onSave({ title: title.trim(), who: who.trim(), room: room.trim(), chips: [topic], energy }); }}
             className="flex-1 rounded-lg bg-amber-500 text-neutral-900 font-semibold py-2 text-sm">Add (marked attended)</button>
           <button onClick={onClose} className="rounded-lg border border-neutral-600 px-4 text-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BoothsModal({ visits, onToggle, onNote, onClose }) {
+  const byTopic = {};
+  for (const b of BOOTHS) { (byTopic[b.topic] = byTopic[b.topic] || []).push(b); }
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-3" onClick={onClose}>
+      <div className="bg-neutral-800 w-full max-w-md rounded-2xl border border-neutral-700 p-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-1">
+          <h3 className="text-base font-semibold">Booths worth your time</h3>
+          <button onClick={onClose} className="text-neutral-400 text-sm">close</button>
+        </div>
+        <p className="text-xs text-neutral-400 mb-3">Matched to your thesis. These are companies featured at the fair — verify they're on the expo floor.</p>
+        <div className="flex flex-col gap-4">
+          {Object.entries(byTopic).map(([topic, list]) => (
+            <div key={topic}>
+              <div className="font-mono text-[10px] tracking-wide text-neutral-500 mb-1.5">{TOPICS[topic].label.toUpperCase()}</div>
+              <div className="flex flex-col gap-2">
+                {list.map((b) => {
+                  const v = visits?.[b.id] || {};
+                  return (
+                    <div key={b.id} className={`rounded-xl border p-3 ${v.visited ? "border-emerald-500/40 bg-emerald-500/5" : "border-neutral-700"}`}>
+                      <div className="flex items-start gap-2.5">
+                        <button onClick={() => onToggle(b.id)}
+                          className={`mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center text-[10px] ${v.visited ? "bg-emerald-500 border-emerald-500 text-neutral-900" : "border-neutral-500"}`}>
+                          {v.visited ? "✓" : ""}
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold">{b.name}</div>
+                          <p className="text-[11px] text-neutral-400 leading-relaxed mt-0.5">{b.why}</p>
+                          {v.visited && (
+                            <input value={v.note || ""} onChange={(e) => onNote(b.id, e.target.value)}
+                              placeholder="Note: who you talked to, follow-up…"
+                              className="mt-2 w-full rounded-lg bg-neutral-900 border border-neutral-600 px-2.5 py-1.5 text-xs" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
