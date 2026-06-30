@@ -9,6 +9,7 @@ export const DEFAULT_STATE = {
   conversations: {},   // day -> count
   nightOut: {},        // day -> true
   notes: {},           // sessionId -> my own note text
+  customSessions: [],  // sessions you attended that aren't in the plan
   updated_at: 0,       // ms epoch, drives last-write-wins
 };
 
