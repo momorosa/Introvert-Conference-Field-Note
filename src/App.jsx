@@ -12,6 +12,7 @@ const allSessions = (state) => [...SESSIONS, ...(state.customSessions || [])];
 
 const parseEnd = (iso, time) => {
   // time like "1:55pm-2:15pm" -> Date of the end on the session's date
+  if (!time) return null; // custom sessions you log have no scheduled time
   const end = time.split("-")[1];
   if (!end) return null;
   const m = end.match(/(\d+):(\d+)(am|pm)/i);
