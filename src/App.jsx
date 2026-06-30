@@ -145,6 +145,11 @@ export default function App() {
     patch((n) => { n.attendance[id] = n.attendance[id] === val ? undefined : val; });
   const setRating = (id, r) =>
     patch((n) => { n.ratings[id] = n.ratings[id] === r ? undefined : r; });
+  const setNote = (id, text) =>
+    patch((n) => {
+      if (!n.notes) n.notes = {};
+      if (text) n.notes[id] = text; else delete n.notes[id];
+    });
   const addBreak = () => patch((n) => n.breaks.push({ day, ts: Date.now() }));
   const bumpConvo = (d) => {
     patch((n) => { n.conversations[day] = Math.max(0, (n.conversations[day] || 0) + d); });
@@ -322,6 +327,7 @@ export default function App() {
           {items.map((s) => {
             const att = state.attendance[s.id];
             const rating = state.ratings[s.id];
+            const note = state.notes?.[s.id] || "";
             const end = parseEnd(DAYS.find((d) => d.n === s.day).iso, s.time);
             const isPast = end && now > end;
             const isRecharge = s.kind === "recharge";
@@ -376,6 +382,20 @@ export default function App() {
                         )}
                       </div>
                     )}
+
+                    {/* my note */}
+                    <details className="mt-2">
+                      <summary className="text-[11px] text-amber-300/80 cursor-pointer select-none">
+                        {note ? `📝 ${note.replace(/\s+/g, " ").slice(0, 48)}${note.length > 48 ? "…" : ""}` : "+ Add a note"}
+                      </summary>
+                      <textarea
+                        value={note}
+                        onChange={(e) => setNote(s.id, e.target.value)}
+                        placeholder="What stuck with you? A quote, an idea, a follow-up…"
+                        rows={2}
+                        className="mt-1 w-full rounded-lg bg-neutral-900 border border-neutral-600 px-2.5 py-1.5 text-xs text-neutral-200 resize-y"
+                      />
+                    </details>
                   </div>
                 </div>
               </article>

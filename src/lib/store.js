@@ -8,6 +8,7 @@ export const DEFAULT_STATE = {
   breaks: [],          // { day, ts }
   conversations: {},   // day -> count
   nightOut: {},        // day -> true
+  notes: {},           // sessionId -> my own note text
   updated_at: 0,       // ms epoch, drives last-write-wins
 };
 
@@ -35,7 +36,7 @@ function saveLocal(uid, s) {
 // ─────────────────────────────────────────────────────────────
 export function useFieldPlanState(session) {
   const uid = session?.user?.id || null;
-  const [state, setStateRaw] = useState(() => loadLocal(uid) || loadLocal(null) || DEFAULT_STATE);
+  const [state, setStateRaw] = useState(() => ({ ...DEFAULT_STATE, ...(loadLocal(uid) || loadLocal(null)) }));
   const [status, setStatus] = useState(supabase && uid ? "syncing" : "local");
   const timer = useRef(null);
 
@@ -58,7 +59,7 @@ export function useFieldPlanState(session) {
     (async () => {
       setStatus("syncing");
       // first sign-in: inherit any anon local data from before login
-      const local = loadLocal(uid) || loadLocal(null) || DEFAULT_STATE;
+      const local = { ...DEFAULT_STATE, ...(loadLocal(uid) || loadLocal(null)) };
       try {
         const { data, error } = await supabase
           .from(TABLE).select("state,updated_at").eq("user_id", uid).maybeSingle();
